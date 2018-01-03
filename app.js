@@ -1,14 +1,10 @@
 /* global $ */
 var express = require('express')
 var path = require('path')
-// var favicon = require('serve-favicon')
-// var logger = require('morgan')
-var cookieParser = require('cookie-parser')
 var bodyParser = require('body-parser')
 var moment = require('moment-timezone')
 
 var index = require('./routes/index')
-var users = require('./routes/users')
 var bab = require('./routes/bab')
 var login = require('./routes/login')
 
@@ -18,19 +14,14 @@ var app = express()
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'ejs')
 
-// uncomment after placing your favicon in /public
-// app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
-// app.use(logger('dev'));
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
-app.use(cookieParser())
 app.use(express.static(path.join(__dirname, 'public')))
 app.use('/jquery', express.static(`${__dirname}/node_modules/jquery/dist/`))
 app.use('/node-schedule', express.static(`${__dirname}/node_modules/node-schedule`))
 app.use('/fb', express.static(`${__dirname}/node_modules/fb/lib/`))
 
 app.use('/', index)
-app.use('/users', users)
 app.use('/bab', bab)
 app.use('/login', login)
 
@@ -60,13 +51,12 @@ const Entities = require('html-entities').XmlEntities
 const entities = new Entities()
 const page = require('./ignore/token')
 const FB = require('fb')
-const info = require('./ignore/info')
 
 module.exports = app.listen(8160, function () {
-  schedule.scheduleJob('1 1 1 * * *', function () {
+  schedule.scheduleJob('3 3 3 * * *', function () {
     console.log(page.getToken())
     FB.setAccessToken(page.getToken())
-    request(info.getUrl(), getBab)
+    request(page.getUrl(), getBab)
   })
   console.log('Bab is hot!')
 })
@@ -80,9 +70,10 @@ function getBab(err, response, body) {
 
 function parsing() {
   const date = moment().tz('Asia/Seoul').format('YYYY-MM-DD-dddd')
-  const day = moment().tz('Asia/Seoul').format('DD')
-  const isToday = $(this).html().substr(0, 2)
-  if (isToday === day) {
+  const day = parseInt(moment().tz('Asia/Seoul').format('DD'))
+  let isToday = parseInt($(this).html().substr(0, 2))
+  isToday = isToday === NaN ? isToday.substr(0, 1) : isToday
+  if (isToday == day) {
     var result = date + '\n'
     var htmlData = $(this).html().split('<br>')
     for (let data of htmlData) {
@@ -97,7 +88,7 @@ function parsing() {
       FB.api(
         '/' + page.getPageId() + '/feed',
         'POST',
-        { 'message': result + '\n\nCreated by GeniusK & Leesane' },
+        { 'message': result + '\n\nCreated by GeniusK & Leesaneee' },
         function (res) {
           if (!res || res.error) {
             console.log('feed err : ', !res ? 'error occurred' : res.error)
